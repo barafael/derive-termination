@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -21,37 +23,38 @@ fn build_termination(input: &DeriveInput) -> syn::Result<TokenStream2> {
         ));
     };
 
-    let mut variant_to_exit_code = Vec::new();
-    for variant in &enum_data.variants {
-        let attrs = &variant.attrs;
-        for attr in attrs {
-            let path = attr.path();
-            if path.is_ident("exit_code") {
-                let code: LitInt = attr.parse_args()?;
-                variant_to_exit_code.push((variant.ident.clone(), variant.fields.clone(), code));
+    let arms = enum_data
+        .variants
+        .iter()
+        .flat_map(|v| {
+            let attrs = &v.attrs;
+            attrs.iter().zip(std::iter::repeat(v))
+        })
+        .filter_map(|(attr, variant)| {
+            if attr.path().is_ident("exit_code").not() {
+                return None;
             }
-        }
-    }
-
-    let arms: Vec<TokenStream2> = variant_to_exit_code
-        .into_iter()
-        .map(|(variant, fields, code)| {
-            let variant = match fields {
-                Fields::Unit => quote! [ Self::#variant ],
-                Fields::Unnamed(_) => quote! [ Self::#variant( .. ) ],
-                Fields::Named(_) => quote! [ Self::#variant { .. } ],
+            Some(attr.parse_args::<LitInt>().map(|code| (variant, code)))
+        })
+        .flat_map(|r| r.into_iter())
+        .map(|(variant, code)| {
+            let ident = &variant.ident;
+            let variant = match variant.fields {
+                Fields::Unit => quote! [ Self::#ident ],
+                Fields::Unnamed(_) => quote! [ Self::#ident( .. ) ],
+                Fields::Named(_) => quote! [ Self::#ident { .. } ],
             };
             quote! {
                 #variant => ::std::process::ExitCode::from(#code),
             }
         })
-        .collect();
+        .collect::<TokenStream2>();
 
     Ok(quote! {
         impl ::std::process::Termination for #enum_name {
             fn report(self) -> ::std::process::ExitCode {
                 match self {
-                    #(#arms)*
+                    #arms
                 }
             }
         }
