@@ -27,6 +27,12 @@ fn should_report_3() {
 The `Termination` derive macro above would generate:
 
 ````rust
+pub enum Error {
+    Fatal(bool, u8),
+    Whatever { name: String },
+    Anyhow,
+}
+
 impl ::std::process::Termination for Error {
     fn report(self) -> ::std::process::ExitCode {
         match self {
