@@ -3,7 +3,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, LitInt, parse_macro_input, spanned::Spanned};
+use syn::{Data, DeriveInput, Fields, LitInt, parse_macro_input};
 
 #[proc_macro_derive(Termination, attributes(exit_code))]
 pub fn derive_termination(input: TokenStream) -> TokenStream {
@@ -17,9 +17,9 @@ pub fn derive_termination(input: TokenStream) -> TokenStream {
 fn build_termination(input: &DeriveInput) -> syn::Result<TokenStream2> {
     let enum_name = &input.ident;
     let Data::Enum(enum_data) = &input.data else {
-        return Err(syn::Error::new(
-            input.span(),
-            "Termination can only be derived for enum",
+        return Err(syn::Error::new_spanned(
+            input,
+            "Termination can only be derived for enums",
         ));
     };
 
