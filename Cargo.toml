@@ -1,6 +1,6 @@
 [package]
 name = "derive-termination"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "Derive the std::process::Termination trait for an enum (annotate the variants with `#[exit_code(n)`)."
 license-file = "LICENSE"
@@ -13,6 +13,3 @@ proc-macro = true
 proc-macro2 = "1"
 quote = "1"
 syn = "2"
-
-[dev-dependencies]
-thiserror = "2"
