@@ -1,6 +1,6 @@
 # derive-termination
 
-Derive the std::process::Termination trait for an enum (annotate the variants with `#[exit_code(n)`).
+Derive the [`std::process::Termination`] trait for an enum (annotate the variants with `#[exit_code(n)`).
 
 ````rust
 use std::process::{ExitCode, Termination};
