@@ -18,8 +18,7 @@ pub enum Error {
     Anyhow,
 }
 
-#[test]
-fn should_report_3() {
+fn main() {
     assert_eq!(Error::Fatal(true, 4).report(), ExitCode::from(3));
 }
 ````
