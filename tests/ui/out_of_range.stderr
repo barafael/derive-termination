@@ -1,0 +1,5 @@
+error: number too large to fit in target type
+ --> tests/ui/out_of_range.rs:5:17
+  |
+5 |     #[exit_code(256)]
+  |                 ^^^

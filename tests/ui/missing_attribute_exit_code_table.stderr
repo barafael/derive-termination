@@ -1,0 +1,5 @@
+error: Variant 'Missing' requires an #[exit_code(N)] attribute
+ --> tests/ui/missing_attribute_exit_code_table.rs:7:5
+  |
+7 |     Missing,
+  |     ^^^^^^^
