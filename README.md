@@ -1,6 +1,6 @@
 # derive-termination
 
-Derive the std::process::Termination trait for an enum (annotate the variants with `#[exit_code(n)`).
+Derive the `std::process::Termination` trait for an enum (annotate the variants with `#[exit_code(n)]`).
 
 ````rust
 use std::process::{ExitCode, Termination};
@@ -24,7 +24,7 @@ fn should_report_3() {
 }
 ````
 
-The `Termination` derive macro above would generate:
+The `Termination` derive macro above expands to:
 
 ````rust
 pub enum Error {
@@ -44,4 +44,34 @@ impl ::std::process::Termination for Error {
 }
 ````
 
-The `std::process::Termination` trait is a trait marking any type which is allowed to be returned from `main`.
+Every variant must carry an `#[exit_code(N)]` attribute; a missing attribute is a compile-time error that names the offending variant.
+
+## `ExitCodeTable`
+
+Pair `Termination` with `ExitCodeTable` to get a static map from exit codes to variant names — useful for looking up a translation key, printing a reference table, or resolving an exit code back to a name.
+
+````rust
+use derive_termination::{ExitCodeTable, Termination};
+
+#[derive(Termination, ExitCodeTable)]
+pub enum Error {
+    #[exit_code(0)] Ok,
+    #[exit_code(1)] Failed(String),
+}
+
+fn main() {
+    let table = Error::exit_code_to_variant();
+    assert_eq!(table[&1], "Failed");
+}
+````
+
+`exit_code_to_variant` returns `std::collections::BTreeMap<u8, &'static str>`.
+
+## Changelog
+
+### 2.0.0 (breaking)
+
+- Missing `#[exit_code(N)]` on a variant is now a hard error with a clear message (previously: silently skipped, which led to a confusing `non-exhaustive match` compile error in generated code).
+- New `ExitCodeTable` derive emitting `fn exit_code_to_variant() -> BTreeMap<u8, &'static str>`.
+
+The `std::process::Termination` trait marks any type which is allowed to be returned from `main`.
